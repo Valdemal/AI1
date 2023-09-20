@@ -1,24 +1,18 @@
-from abc import abstractmethod
 from typing import Tuple
 
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QGridLayout, QLabel, QTextEdit, QLineEdit
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QGridLayout, QLabel, QLineEdit
 
-from Controller import Controller
+from Controller import Controller, HistoryStorage
 from .views import Table
 
 
-class Mediator(QWidget):
-    @abstractmethod
-    def notify(self, event: str):
-        pass
-
-
 class Panel(QWidget):
-    def __init__(self, mediator: Mediator, controller: Controller, *args, **kwargs):
+    def __init__(self, mediator: 'MainWidget', controller: Controller, storage: HistoryStorage, *args, **kwargs):
         super().__init__(*args, **kwargs, parent=mediator)
 
         self.__mediator = mediator
         self.__controller = controller
+        self.__storage = storage
         self.__in_process = False
 
         self.__conflicts_label = QLabel(f"Конфликты: {self.__controller.conflicts}", parent=self)
@@ -39,26 +33,41 @@ class Panel(QWidget):
         self.__disable()
 
     def _step_forward(self):
-        self.__controller.make_step()
-        self.__mediator.notify('step_forward')
+        self.__storage.do()
+        self.__step_back_button.setEnabled(True)
+        self._update()
+
+    def _step_back(self):
+        self.__storage.undo()
+
+        if self.__storage.on_start():
+            self.__step_back_button.setEnabled(False)
+
+        self._update()
+
+    def _update(self):
+        self.__mediator.update()
+        self.__temperature_input.setText(str(self.__controller.temperature))
+        self.__conflicts_label.setText(f"Конфликты: {self.__controller.conflicts}")
 
     def _step_solution(self):
         self.__enable()
+        self.__mediator.update()
 
     def _instance_solution(self):
         self.__enable()
+        self.__mediator.update()
 
     def _reset_solution(self):
         self.__disable()
-    #
-    # def _step_back(self):
-    #     self.__controller.step_back()
-    #     self.__mediator.notify('step_back')
+        self.__mediator.update()
+
 
     def __disable(self):
         self.__in_process = False
 
         self.__queens_count_input.setEnabled(True)
+        self.__temperature_input.setEnabled(True)
         self.__step_forward_button.setEnabled(False)
         self.__step_back_button.setEnabled(False)
 
@@ -69,9 +78,10 @@ class Panel(QWidget):
     def __enable(self):
         self.__in_process = True
 
+        self.__controller.reset(int(self.__queens_count_input.text()), float(self.__temperature_input.text()))
         self.__queens_count_input.setEnabled(False)
+        self.__temperature_input.setEnabled(False)
         self.__step_forward_button.setEnabled(True)
-        self.__step_back_button.setEnabled(True)
 
         self.__step_solution_button.setVisible(False)
         self.__instance_solution_button.setVisible(False)
@@ -79,6 +89,7 @@ class Panel(QWidget):
 
     def __attach_events(self):
         self.__step_forward_button.clicked.connect(self._step_forward)
+        self.__step_back_button.clicked.connect(self._step_back)
         self.__step_solution_button.clicked.connect(self._step_solution)
         self.__instance_solution_button.clicked.connect(self._instance_solution)
         self.__reset_button.clicked.connect(self._reset_solution)
@@ -100,27 +111,22 @@ class Panel(QWidget):
         self.layout().addWidget(self.__reset_button, 1, 0, 1, 2)
 
 
-
-
-class MainWidget(Mediator):
+class MainWidget(QWidget):
     def __init__(self, title: str, size: Tuple[int, int]):
         super().__init__()
         self.resize(*size)
         self.setWindowTitle(title)
 
         controller = Controller()
+        storage = HistoryStorage(controller)
 
         self.__table = Table(self.width() // 2, controller)
         self.__graphic = QPushButton("График")
-        self.__panel = Panel(self, controller)
+        self.__panel = Panel(self, controller, storage)
 
         self.__create_layout()
 
-    def notify(self, event: str):
-        if event == 'step_forward':
-            self._update_view()
-
-    def _update_view(self):
+    def update_view(self):
         self.__table.repaint()
 
     def __create_layout(self):
