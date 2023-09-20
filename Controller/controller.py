@@ -11,7 +11,7 @@ def swap_elements(array) -> List[int]:
     return array
 
 
-def conflicts(queens: List[int]) -> int:
+def compute_conflicts(queens: List[int]) -> int:
     # todo скорее всего работает неправильно
     s = 0
     for i in range(len(queens)):
@@ -32,7 +32,7 @@ class Controller:
         self.__queens = list(range(queens_count))
         random.shuffle(self.__queens)
         self.__temperature = temperature
-        self.__conflicts = conflicts(self.__queens)
+        self.__conflicts = compute_conflicts(self.__queens)
 
     @property
     def queens(self) -> List[int]:
@@ -48,7 +48,7 @@ class Controller:
 
     def step(self):
         new_state = swap_elements(self.__queens)
-        new_result = conflicts(new_state)
+        new_result = compute_conflicts(new_state)
 
         if new_result < self.conflicts or self._transition_available(new_result, self.conflicts, self.temperature):
             self.__queens, self.__conflicts = new_state, new_result
@@ -56,25 +56,30 @@ class Controller:
         self.__temperature *= 0.5
 
     class Memento:
-        def __init__(self, queens, temperature):
+        def __init__(self, queens, temperature, conflicts):
             self.__queens = copy(queens)
             self.__temperature = temperature
+            self.__conflicts = conflicts
 
         @property
-        def queens(self):
+        def queens(self) -> List[int]:
             return self.__queens
 
         @property
-        def temperature(self):
+        def temperature(self) -> float:
             return self.__temperature
 
+        @property
+        def conflicts(self) -> int:
+            return self.__conflicts
+
     def save(self) -> Memento:
-        return self.Memento(self.queens, self.temperature)
+        return self.Memento(self.queens, self.temperature, self.conflicts)
 
     def restore(self, memento: Memento):
         self.__queens = memento.queens
         self.__temperature = memento.temperature
-        self.__conflicts = conflicts(self.__queens)
+        self.__conflicts = compute_conflicts(self.__queens)
 
     @staticmethod
     def _transition_available(new: int, previous: int, temperature: float) -> bool:

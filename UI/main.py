@@ -3,7 +3,7 @@ from typing import Tuple
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QGridLayout, QLabel, QLineEdit
 
 from Controller import Controller, HistoryStorage
-from .views import Table
+from .views import Table, Graphic
 
 
 class Panel(QWidget):
@@ -46,9 +46,9 @@ class Panel(QWidget):
         self._update()
 
     def _update(self):
-        self.__mediator.update()
         self.__temperature_input.setText(str(self.__controller.temperature))
         self.__conflicts_label.setText(f"Конфликты: {self.__controller.conflicts}")
+        self.__mediator.update()
 
     def _step_solution(self):
         self.__enable()
@@ -61,7 +61,6 @@ class Panel(QWidget):
     def _reset_solution(self):
         self.__disable()
         self.__mediator.update()
-
 
     def __disable(self):
         self.__in_process = False
@@ -121,18 +120,20 @@ class MainWidget(QWidget):
         storage = HistoryStorage(controller)
 
         self.__table = Table(self.width() // 2, controller)
-        self.__graphic = QPushButton("График")
+        self.__graphic = Graphic(storage)
         self.__panel = Panel(self, controller, storage)
 
         self.__create_layout()
 
     def update_view(self):
         self.__table.repaint()
+        # self.__graphic.repaint()
 
     def __create_layout(self):
         main_layout = QVBoxLayout()
         top = QWidget(self)
         top.setLayout(QHBoxLayout())
+
         top.layout().addWidget(self.__table)
         top.layout().addWidget(self.__graphic)
 
