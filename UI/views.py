@@ -6,13 +6,13 @@ from PyQt5.QtGui import QPainter, QPen, QBrush
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
 from pyqtgraph import PlotWidget, mkPen
 
-from Controller import Controller, HistoryStorage
+from Controller import Solver, HistoryStorage
 
 
 class Table(QWidget):
-    def __init__(self, size: int, controller: Controller):
+    def __init__(self, size: int, solver: Solver):
         super().__init__()
-        self._controller = controller
+        self._solver = solver
         self.setMaximumSize(size, size)
         self.setMinimumSize(size, size)
         self.resize(size, size)
@@ -35,11 +35,11 @@ class Table(QWidget):
     def __paint_queens(self, painter: QPainter):
         painter.setPen(QPen(Qt.yellow, 3))
 
-        n = len(self._controller.queens)
+        n = len(self._solver.queens)
         a = self.width() / n
 
         for i in range(n):
-            x1 = int(self.rect().x() + self._controller.queens[i] * a)
+            x1 = int(self.rect().x() + self._solver.queens[i] * a)
             y1 = int(self.rect().y() + i * a)
             painter.drawLine(
                 x1, y1, x1 + int(a), y1 + int(a)
@@ -49,7 +49,7 @@ class Table(QWidget):
         painter.setPen(QPen(Qt.black, 1))
         painter.setBrush(QBrush(Qt.darkGray))
 
-        n = len(self._controller.queens)
+        n = len(self._solver.queens)
         a = self.width() / n
         size = QSizeF(a, a)
 
