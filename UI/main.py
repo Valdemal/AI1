@@ -13,7 +13,8 @@ class MainWidget(QWidget):
         self.resize(*size)
         self.setWindowTitle(title)
 
-        self.reset(n_queens, temperature)
+        self.__solver = Solver(n_queens, temperature)
+        self.__storage = HistoryStorage(self.__solver)
 
         self.__table = Table(self.width() // 2, self.__solver)
         self.__graphic = Graphic(self.__storage)
@@ -22,8 +23,9 @@ class MainWidget(QWidget):
         self.__create_layout()
 
     def reset(self, n_queens: int, temperature: float):
-        self.__solver = Solver(n_queens, temperature)
-        self.__storage = HistoryStorage(self.__solver)
+        self.__solver.reset(n_queens, temperature)
+        self.__storage.clear_history()
+        self.__graphic.clear_graphics()
 
     def __create_layout(self):
         main_layout = QVBoxLayout()

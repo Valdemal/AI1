@@ -78,6 +78,10 @@ class Graphic(QWidget):
         super().paintEvent(ev)
         self._make_plot()
 
+    def clear_graphics(self):
+        self.__conflicts_graphic.clear()
+        self.__temperature_graphic.clear()
+
     def _make_plot(self):
         x = range(len(self.__storage.history))
         temperature = [item.temperature for item in self.__storage.history]

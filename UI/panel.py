@@ -74,7 +74,9 @@ class Panel(QWidget):
     def __enable(self):
         self.__in_process = True
 
-        self.__mediator.reset(int(self.__queens_count_input.text()), float(self.__temperature_input.text()))
+        self.__mediator.reset(
+            int(self.__queens_count_input.text()), float(self.__temperature_input.text())
+        )
 
         self.__queens_count_input.setEnabled(False)
         self.__temperature_input.setEnabled(False)

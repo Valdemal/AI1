@@ -26,6 +26,9 @@ def compute_conflicts(queens: List[int]) -> int:
 
 class Solver:
     def __init__(self, queens_count: int, temperature: float):
+        self.reset(queens_count, temperature)
+
+    def reset(self, queens_count: int, temperature: float):
         self.__queens = list(range(queens_count))
         random.shuffle(self.__queens)
         self.__temperature = temperature

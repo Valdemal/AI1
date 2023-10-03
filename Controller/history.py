@@ -29,6 +29,10 @@ class HistoryStorage:
             self.__history.step_forward()
             self.__controller.restore(self.__history.current)
 
+    def clear_history(self):
+        self.__history = ArrayList()
+        self.__history.push_forward(self.__controller.save())
+
 
 class ArrayList:
     def __init__(self):
