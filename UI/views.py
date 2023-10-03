@@ -2,7 +2,7 @@ from itertools import product
 
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt, QSizeF, QPointF, QRectF
-from PyQt5.QtGui import QPainter, QPen, QBrush
+from PyQt5.QtGui import QPainter, QPen, QBrush, QPixmap
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
 from pyqtgraph import PlotWidget, mkPen
 
@@ -17,14 +17,21 @@ class Table(QWidget):
         self.setMinimumSize(size, size)
         self.resize(size, size)
 
+        self.pixmap = QPixmap()
+        self.pixmap.load("static/queen.png")
+
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         painter = QPainter()
         painter.begin(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
+        n = len(self._solver.queens)
+        a = self.width() / n
+        size = QSizeF(a, a)
+
         self.__paint_border(painter)
-        self.__paint_squares(painter)
-        self.__paint_queens(painter)
+        self.__paint_squares(painter, n, size)
+        self.__paint_queens(painter, size)
 
         painter.end()
 
@@ -32,30 +39,22 @@ class Table(QWidget):
         painter.setPen(QPen(Qt.black, 3))
         painter.drawRect(self.rect())
 
-    def __paint_queens(self, painter: QPainter):
-        painter.setPen(QPen(Qt.yellow, 3))
+    def __paint_queens(self, painter: QPainter, size: QSizeF):
+        pixmap = self.pixmap.scaled(size.toSize())
 
-        n = len(self._solver.queens)
-        a = self.width() / n
-
-        for i in range(n):
-            x1 = int(self.rect().x() + self._solver.queens[i] * a)
-            y1 = int(self.rect().y() + i * a)
-            painter.drawLine(
-                x1, y1, x1 + int(a), y1 + int(a)
+        for i in range(len(self._solver.queens)):
+            painter.drawPixmap(
+                QPointF(size.width() * i, size.height() * self._solver.queens[i]),
+                pixmap
             )
 
-    def __paint_squares(self, painter: QPainter):
+    def __paint_squares(self, painter: QPainter, n: int, size: QSizeF):
         painter.setPen(QPen(Qt.black, 1))
         painter.setBrush(QBrush(Qt.darkGray))
 
-        n = len(self._solver.queens)
-        a = self.width() / n
-        size = QSizeF(a, a)
-
         for i, j in product(range(n), range(n)):
             if (i + j) % 2 == 0:
-                top_left = QPointF(self.rect().x() + j * a, self.rect().y() + i * a)
+                top_left = QPointF(self.rect().x() + j * size.width(), self.rect().y() + i * size.width())
                 draw_rect = QRectF(top_left, size)
                 painter.drawRect(draw_rect)
 
@@ -103,4 +102,3 @@ class Graphic(QWidget):
         layout.addWidget(self.__temperature_graphic)
         layout.addWidget(self.__conflicts_graphic)
         self.setLayout(layout)
-
