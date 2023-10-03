@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QLabel, QLineEdit, QPushButton, QGridLayout, QWidget
+from PyQt5.QtWidgets import QLabel, QLineEdit, QPushButton, QGridLayout, QWidget, QInputDialog
 
 from Controller import Solver, HistoryStorage
 
@@ -54,6 +54,15 @@ class Panel(QWidget):
     def _instance_solution(self):
         self.__enable()
         self.__mediator.update()
+
+        step_count, done = QInputDialog.getInt(self, "Количество итераций", "Введите количество итераций: ")
+
+        if done:
+            for _ in range(step_count):
+                self.__storage.do()
+
+            self.__step_back_button.setEnabled(True)
+            self._update()
 
     def _reset_solution(self):
         self.__disable()
