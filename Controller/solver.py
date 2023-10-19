@@ -12,13 +12,13 @@ def swap_elements(array) -> List[int]:
 
 
 def compute_conflicts(queens: List[int]) -> int:
-    # todo скорее всего работает неправильно
     s = 0
     for i in range(len(queens)):
-        d = 1
+        d = 0
         for j in range(i):
             if abs(i - j) == abs(queens[i] - queens[j]):
-                d = 0
+                d = 1
+                break
         s += d
 
     return s
@@ -47,13 +47,14 @@ class Solver:
         return self.__temperature
 
     def step(self):
-        new_state = swap_elements(self.__queens)
-        new_result = compute_conflicts(new_state)
+        for i in range(100):
+            new_state = swap_elements(self.__queens)
+            new_result = compute_conflicts(new_state)
 
-        if new_result < self.conflicts or self._transition_available(new_result, self.conflicts, self.temperature):
-            self.__queens, self.__conflicts = new_state, new_result
+            if new_result < self.conflicts or self._transition_available(new_result, self.conflicts, self.temperature):
+                self.__queens, self.__conflicts = new_state, new_result
 
-        self.__temperature *= 0.5
+        self.__temperature *= 0.9995
 
     class Memento:
         def __init__(self, queens, temperature, conflicts):
@@ -84,7 +85,7 @@ class Solver:
     @staticmethod
     def _transition_available(new: int, previous: int, temperature: float) -> bool:
         p = 100 * exp(-(new - previous) / temperature)
-        threshold = random.randint(0, 80)
+        threshold = random.randint(0, 100)
 
         return p > threshold
 

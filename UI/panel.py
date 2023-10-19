@@ -44,7 +44,7 @@ class Panel(QWidget):
 
     def _update(self):
         self.__temperature_input.setText(str(self.__solver.temperature))
-        self.__conflicts_label.setText(f"Конфликты: {self.__solver.conflicts}")
+        self.__conflicts_label.setText(f"Конфликты: {self.__storage.best()}")
         self.__mediator.update()
 
     def _step_solution(self):
@@ -58,7 +58,7 @@ class Panel(QWidget):
         step_count, done = QInputDialog.getInt(self, "Количество итераций", "Введите количество итераций: ")
 
         if done:
-            for _ in range(step_count):
+            while self.__solver.temperature > 0.3:
                 self.__storage.do()
 
             self.__step_back_button.setEnabled(True)

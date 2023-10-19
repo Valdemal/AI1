@@ -20,6 +20,9 @@ class HistoryStorage:
         self.__history.step_back()
         self.__controller.restore(self.__history.current)
 
+    def best(self):
+        return min([memento.conflicts for memento in self.__history.values])
+
     def do(self):
         if self.__history.on_end():
             self.__controller.step()
